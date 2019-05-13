@@ -1,0 +1,784 @@
+/**
+ * Implements the Mario Demo game.
+ * This simple game allows the user to move Mario left and right around the screen,
+ * to make him jump and collect coins via brick- hitting.
+ * When the game starts, a 64 by 64 Mario figure is shown at the lower-left part of the screen, along with several bricks and goround
+ * for Mario to walk on.
+ * The user controls Mario as follows:
+ * The left and right arrow keys are used to move  Mario left and right accoridingly, and the space key is used to jump.
+ * The 'q' key is used to quit the game.
+ */
+class MarioGame {
+
+	field Mario mario;
+	field int direction, boxAbove, score;
+	static boolean jump, coinActive, scoreFlag;
+	field String initMsg, lives, scoreMsg, headerMsg;
+	static Array boxArr;
+	static int boxArrLength;
+	
+	/** Constructs a new Square Game. */
+	constructor MarioGame new() {
+		let direction = -1;
+		let jump = false;
+		let coinActive = false;
+		let scoreFlag = false;
+		let initMsg = "WORLD   1 - 1";
+		let lives = "x 1";
+		do init();
+		do Sys.wait(3000);
+		do Screen.clearScreen();
+		
+		let score = 0;
+		let scoreMsg = "Score: 000000";
+		let headerMsg = "Lives x 1              WORLD 1 - 1";
+		do setScore();
+		
+		do drawGround();
+		let mario = Mario.new();
+		let boxArrLength = 5;
+		let boxArr = Array.new(boxArrLength);
+		do createBoxes();
+		return this;
+	}
+	
+	/** Updates the score shown on the screen to the current score. */
+	method void setScore() {
+		do Output.moveCursor(0, 51);
+		do Output.printString(scoreMsg);
+		do Output.moveCursor(0, 1);
+		do Output.printString(headerMsg);
+		let scoreFlag = false;
+		return;
+	}
+	
+	/** Returns the number of digits in a given int. */
+	method int numberOfDigits(int num) {
+		var int log;
+		let log = 0;
+		while ((num > 10) | (num = 10)) {
+			let num = Math.divide(num, 10);
+			let log = log + 1;
+		}
+		let log = log + 1;
+		return log;
+	}
+	
+	/** Updates the value of "score" field of this MarioGame. */
+	method void updateScore(int value, String string) {
+		var String tempScore;
+		var int i, j, numOfDigits, scoreMsgLength;
+		var char c;
+		let score = score + value;
+		let numOfDigits = numberOfDigits(score);
+		let tempScore = String.new(numOfDigits);
+		do tempScore.setInt(score);
+		let scoreMsgLength = string.length();
+		let i = scoreMsgLength - numOfDigits;
+		let j = 0;
+		while (j < numOfDigits) {
+			let c = tempScore.charAt(j);
+			do string.setCharAt(i, c);
+			let i = i + 1;
+			let j = j + 1;
+		}
+		if (string = scoreMsg) { do setScore(); }
+		do tempScore.dispose();
+		return;
+	}
+	
+	/**Generates the construction of all the boxes in the game. */
+	method void createBoxes() {
+		var Box brick1, brick2, brick3, qm1, qm2;
+		let brick1 = Box.new(0, 70, 69);
+		let brick2 = Box.new(0, 134, 69);
+		let qm1 = Box.new(1, 198, 69);
+		let brick3 = Box.new(0, 262, 69);
+		let qm2 = Box.new(1, 390, 69);
+		let boxArr[0] = brick1;
+		let boxArr[1] = brick2;
+		let boxArr[2] = qm1;
+		let boxArr[3] = brick3;
+		let boxArr[4] = qm2;
+		return;
+	}
+	
+	/** Generates the drawing of all the boxes in the game. */
+	function void drawBoxes() {
+		var int i;
+		var Box temp;
+		let i = 0;
+		while (i < boxArrLength) {
+			let temp = boxArr[i];
+			do temp.draw();
+			let i = i + 1;
+		}
+		return;
+	}
+
+	/** Initializes the game and drwas all the relevant objects in their initial state. */	
+	method void init() {
+		var int scnAddres;
+		do Screen.setColor(true);
+		do Screen.drawRectangle(0, 0, 511, 255);
+		do Screen.setColor(false);
+		do Output.moveCursor(8, 24);
+		do Output.printString(initMsg);
+		do Output.moveCursor(14, 34);
+		do Output.printString(lives);
+        let scnAddres = 16384 + Math.multiply(32, 115) + Math.divide(185, 16);
+        do Memory.poke(scnAddres + 0, -1);
+        do Memory.poke(scnAddres + 1, -2);
+        do Memory.poke(scnAddres + 2, -1);
+        do Memory.poke(scnAddres + 3, -8193);
+        do Memory.poke(scnAddres + 32, -1);
+        do Memory.poke(scnAddres + 33, -2);
+        do Memory.poke(scnAddres + 34, -1);
+        do Memory.poke(scnAddres + 35, -1);
+        do Memory.poke(scnAddres + 64, 8191);
+        do Memory.poke(scnAddres + 65, -2);
+        do Memory.poke(scnAddres + 66, -1);
+        do Memory.poke(scnAddres + 67, -1);
+        do Memory.poke(scnAddres + 96, -8193);
+        do Memory.poke(scnAddres + 97, -1);
+        do Memory.poke(scnAddres + 98, -1);
+        do Memory.poke(scnAddres + 99, -1);
+        do Memory.poke(scnAddres + 128, -8193);
+        do Memory.poke(scnAddres + 129, -1);
+        do Memory.poke(scnAddres + 130, -1);
+        do Memory.poke(scnAddres + 131, -1);
+        do Memory.poke(scnAddres + 160, -8193);
+        do Memory.poke(scnAddres + 161, -1);
+        do Memory.poke(scnAddres + 162, -1);
+        do Memory.poke(scnAddres + 163, -1);
+        do Memory.poke(scnAddres + 192, -8193);
+        do Memory.poke(scnAddres + 193, -1);
+        do Memory.poke(scnAddres + 194, -1);
+        do Memory.poke(scnAddres + 195, -1);
+        do Memory.poke(scnAddres + 224, -8193);
+        do Memory.poke(scnAddres + 225, -1);
+        do Memory.poke(scnAddres + 226, -1);
+        do Memory.poke(scnAddres + 227, -1);
+        do Memory.poke(scnAddres + 256, -8193);
+        do Memory.poke(scnAddres + 257, 8191);
+        do Memory.poke(scnAddres + 258, 18304);
+        do Memory.poke(scnAddres + 259, -512);
+        do Memory.poke(scnAddres + 288, -8193);
+        do Memory.poke(scnAddres + 289, 8191);
+        do Memory.poke(scnAddres + 290, 18304);
+        do Memory.poke(scnAddres + 291, -1);
+        do Memory.poke(scnAddres + 320, 32511);
+        do Memory.poke(scnAddres + 321, 248);
+        do Memory.poke(scnAddres + 322, 18304);
+        do Memory.poke(scnAddres + 323, -1);
+        do Memory.poke(scnAddres + 352, 32511);
+        do Memory.poke(scnAddres + 353, 248);
+        do Memory.poke(scnAddres + 354, -14464);
+        do Memory.poke(scnAddres + 355, -1);
+        do Memory.poke(scnAddres + 384, 32511);
+        do Memory.poke(scnAddres + 385, 248);
+        do Memory.poke(scnAddres + 386, 1920);
+        do Memory.poke(scnAddres + 387, -64);
+        do Memory.poke(scnAddres + 416, 32511);
+        do Memory.poke(scnAddres + 417, 248);
+        do Memory.poke(scnAddres + 418, 1920);
+        do Memory.poke(scnAddres + 419, -64);
+        do Memory.poke(scnAddres + 448, 32511);
+        do Memory.poke(scnAddres + 449, 248);
+        do Memory.poke(scnAddres + 450, 32640);
+        do Memory.poke(scnAddres + 451, -64);
+        do Memory.poke(scnAddres + 480, 32511);
+        do Memory.poke(scnAddres + 481, 8184);
+        do Memory.poke(scnAddres + 482, 31744);
+        do Memory.poke(scnAddres + 483, -64);
+        do Memory.poke(scnAddres + 512, 32511);
+        do Memory.poke(scnAddres + 513, 8184);
+        do Memory.poke(scnAddres + 514, 31744);
+        do Memory.poke(scnAddres + 515, -64);
+        do Memory.poke(scnAddres + 544, 32511);
+        do Memory.poke(scnAddres + 545, 8184);
+        do Memory.poke(scnAddres + 546, 31744);
+        do Memory.poke(scnAddres + 547, -4096);
+        do Memory.poke(scnAddres + 576, -257);
+        do Memory.poke(scnAddres + 577, 8191);
+        do Memory.poke(scnAddres + 578, 31744);
+        do Memory.poke(scnAddres + 579, -4096);
+        do Memory.poke(scnAddres + 608, -257);
+        do Memory.poke(scnAddres + 609, 7);
+        do Memory.poke(scnAddres + 610, 31744);
+        do Memory.poke(scnAddres + 611, -64);
+        do Memory.poke(scnAddres + 640, -257);
+        do Memory.poke(scnAddres + 641, 7);
+        do Memory.poke(scnAddres + 642, -64);
+        do Memory.poke(scnAddres + 643, -257);
+        do Memory.poke(scnAddres + 672, -1);
+        do Memory.poke(scnAddres + 673, 7);
+        do Memory.poke(scnAddres + 674, -64);
+        do Memory.poke(scnAddres + 675, -1);
+        do Memory.poke(scnAddres + 704, -1);
+        do Memory.poke(scnAddres + 705, 15);
+        do Memory.poke(scnAddres + 706, -64);
+        do Memory.poke(scnAddres + 707, -1);
+        do Memory.poke(scnAddres + 736, 511);
+        do Memory.poke(scnAddres + 737, 8);
+        do Memory.poke(scnAddres + 738, 0);
+        do Memory.poke(scnAddres + 739, -140);
+        do Memory.poke(scnAddres + 768, 32767);
+        do Memory.poke(scnAddres + 769, 8);
+        do Memory.poke(scnAddres + 770, 0);
+        do Memory.poke(scnAddres + 771, -4);
+        do Memory.poke(scnAddres + 800, -1);
+        do Memory.poke(scnAddres + 801, -1);
+        do Memory.poke(scnAddres + 802, -1);
+        do Memory.poke(scnAddres + 803, -1);
+        do Memory.poke(scnAddres + 832, -1);
+        do Memory.poke(scnAddres + 833, 896);
+        do Memory.poke(scnAddres + 834, 1792);
+        do Memory.poke(scnAddres + 835, -2);
+        do Memory.poke(scnAddres + 864, -1);
+        do Memory.poke(scnAddres + 865, 896);
+        do Memory.poke(scnAddres + 866, 1792);
+        do Memory.poke(scnAddres + 867, -2);
+        do Memory.poke(scnAddres + 896, -16385);
+        do Memory.poke(scnAddres + 897, 896);
+        do Memory.poke(scnAddres + 898, 1792);
+        do Memory.poke(scnAddres + 899, -66);
+        do Memory.poke(scnAddres + 928, -30721);
+        do Memory.poke(scnAddres + 929, 896);
+        do Memory.poke(scnAddres + 930, 1792);
+        do Memory.poke(scnAddres + 931, -96);
+        do Memory.poke(scnAddres + 960, -1);
+        do Memory.poke(scnAddres + 961, 896);
+        do Memory.poke(scnAddres + 962, 1792);
+        do Memory.poke(scnAddres + 963, -96);
+        do Memory.poke(scnAddres + 992, 4095);
+        do Memory.poke(scnAddres + 993, 896);
+        do Memory.poke(scnAddres + 994, 1792);
+        do Memory.poke(scnAddres + 995, -2016);
+        do Memory.poke(scnAddres + 1024, 4063);
+        do Memory.poke(scnAddres + 1025, 896);
+        do Memory.poke(scnAddres + 1026, 1792);
+        do Memory.poke(scnAddres + 1027, -4128);
+        do Memory.poke(scnAddres + 1056, 4079);
+        do Memory.poke(scnAddres + 1057, 896);
+        do Memory.poke(scnAddres + 1058, 1792);
+        do Memory.poke(scnAddres + 1059, -6144);
+        do Memory.poke(scnAddres + 1088, 47);
+        do Memory.poke(scnAddres + 1089, 896);
+        do Memory.poke(scnAddres + 1090, 1792);
+        do Memory.poke(scnAddres + 1091, -6144);
+        do Memory.poke(scnAddres + 1120, -17);
+        do Memory.poke(scnAddres + 1121, 897);
+        do Memory.poke(scnAddres + 1122, 1792);
+        do Memory.poke(scnAddres + 1123, -4097);
+        do Memory.poke(scnAddres + 1152, -49);
+        do Memory.poke(scnAddres + 1153, -903);
+        do Memory.poke(scnAddres + 1154, 31231);
+        do Memory.poke(scnAddres + 1155, -4097);
+        do Memory.poke(scnAddres + 1184, -49);
+        do Memory.poke(scnAddres + 1185, -391);
+        do Memory.poke(scnAddres + 1186, 31231);
+        do Memory.poke(scnAddres + 1187, -4097);
+        do Memory.poke(scnAddres + 1216, 79);
+        do Memory.poke(scnAddres + 1217, -647);
+        do Memory.poke(scnAddres + 1218, 31487);
+        do Memory.poke(scnAddres + 1219, -2045);
+        do Memory.poke(scnAddres + 1248, 95);
+        do Memory.poke(scnAddres + 1249, -897);
+        do Memory.poke(scnAddres + 1250, 30975);
+        do Memory.poke(scnAddres + 1251, -2045);
+        do Memory.poke(scnAddres + 1280, 95);
+        do Memory.poke(scnAddres + 1281, -1);
+        do Memory.poke(scnAddres + 1282, -1);
+        do Memory.poke(scnAddres + 1283, -2045);
+        do Memory.poke(scnAddres + 1312, 95);
+        do Memory.poke(scnAddres + 1313, -8);
+        do Memory.poke(scnAddres + 1314, -1);
+        do Memory.poke(scnAddres + 1315, -2045);
+        do Memory.poke(scnAddres + 1344, 95);
+        do Memory.poke(scnAddres + 1345, -8);
+        do Memory.poke(scnAddres + 1346, 32767);
+        do Memory.poke(scnAddres + 1347, -2048);
+        do Memory.poke(scnAddres + 1376, 95);
+        do Memory.poke(scnAddres + 1377, -8);
+        do Memory.poke(scnAddres + 1378, 32767);
+        do Memory.poke(scnAddres + 1379, -2048);
+        do Memory.poke(scnAddres + 1408, 95);
+        do Memory.poke(scnAddres + 1409, -8);
+        do Memory.poke(scnAddres + 1410, 32767);
+        do Memory.poke(scnAddres + 1411, -6144);
+        do Memory.poke(scnAddres + 1440, 95);
+        do Memory.poke(scnAddres + 1441, -1);
+        do Memory.poke(scnAddres + 1442, 32767);
+        do Memory.poke(scnAddres + 1443, -6144);
+        do Memory.poke(scnAddres + 1472, -33);
+        do Memory.poke(scnAddres + 1473, -1);
+        do Memory.poke(scnAddres + 1474, -1);
+        do Memory.poke(scnAddres + 1475, -6141);
+        do Memory.poke(scnAddres + 1504, -4065);
+        do Memory.poke(scnAddres + 1505, -1);
+        do Memory.poke(scnAddres + 1506, -1);
+        do Memory.poke(scnAddres + 1507, -4097);
+        do Memory.poke(scnAddres + 1536, -1);
+        do Memory.poke(scnAddres + 1537, -1);
+        do Memory.poke(scnAddres + 1538, -1);
+        do Memory.poke(scnAddres + 1539, -1);
+        do Memory.poke(scnAddres + 1568, -1);
+        do Memory.poke(scnAddres + 1569, -1);
+        do Memory.poke(scnAddres + 1570, -1);
+        do Memory.poke(scnAddres + 1571, -4093);
+        do Memory.poke(scnAddres + 1600, -1);
+        do Memory.poke(scnAddres + 1601, -1);
+        do Memory.poke(scnAddres + 1602, -1);
+        do Memory.poke(scnAddres + 1603, -13);
+        do Memory.poke(scnAddres + 1632, -1);
+        do Memory.poke(scnAddres + 1633, -1);
+        do Memory.poke(scnAddres + 1634, -1);
+        do Memory.poke(scnAddres + 1635, -5);
+        do Memory.poke(scnAddres + 1664, 32767);
+        do Memory.poke(scnAddres + 1665, -1);
+        do Memory.poke(scnAddres + 1666, -1);
+        do Memory.poke(scnAddres + 1667, -5);
+        do Memory.poke(scnAddres + 1696, 32767);
+        do Memory.poke(scnAddres + 1697, -1);
+        do Memory.poke(scnAddres + 1698, -1);
+        do Memory.poke(scnAddres + 1699, -5);
+        do Memory.poke(scnAddres + 1728, 32767);
+        do Memory.poke(scnAddres + 1729, 4095);
+        do Memory.poke(scnAddres + 1730, -32);
+        do Memory.poke(scnAddres + 1731, -5);
+        do Memory.poke(scnAddres + 1760, 32767);
+        do Memory.poke(scnAddres + 1761, -12289);
+        do Memory.poke(scnAddres + 1762, -1);
+        do Memory.poke(scnAddres + 1763, -5);
+        do Memory.poke(scnAddres + 1792, 1023);
+        do Memory.poke(scnAddres + 1793, -4097);
+        do Memory.poke(scnAddres + 1794, -1);
+        do Memory.poke(scnAddres + 1795, -29);
+        do Memory.poke(scnAddres + 1824, -257);
+        do Memory.poke(scnAddres + 1825, -769);
+        do Memory.poke(scnAddres + 1826, 191);
+        do Memory.poke(scnAddres + 1827, -2);
+        do Memory.poke(scnAddres + 1856, 1791);
+        do Memory.poke(scnAddres + 1857, -384);
+        do Memory.poke(scnAddres + 1858, 447);
+        do Memory.poke(scnAddres + 1859, -16);
+        do Memory.poke(scnAddres + 1888, 1791);
+        do Memory.poke(scnAddres + 1889, -384);
+        do Memory.poke(scnAddres + 1890, 447);
+        do Memory.poke(scnAddres + 1891, -1008);
+        do Memory.poke(scnAddres + 1920, 1983);
+        do Memory.poke(scnAddres + 1921, -384);
+        do Memory.poke(scnAddres + 1922, 447);
+        do Memory.poke(scnAddres + 1923, -1040);
+        do Memory.poke(scnAddres + 1952, 223);
+        do Memory.poke(scnAddres + 1953, -384);
+        do Memory.poke(scnAddres + 1954, 447);
+        do Memory.poke(scnAddres + 1955, -512);
+        do Memory.poke(scnAddres + 1984, 95);
+        do Memory.poke(scnAddres + 1985, -384);
+        do Memory.poke(scnAddres + 1986, 447);
+        do Memory.poke(scnAddres + 1987, -1024);
+        do Memory.poke(scnAddres + 2016, -33);
+        do Memory.poke(scnAddres + 2017, -257);
+        do Memory.poke(scnAddres + 2018, -65);
+        do Memory.poke(scnAddres + 2019, -1);
+        return;
+	}
+	
+		/** Sets the "jump" constand variable to false. */
+	function void setJump() {
+		let jump = false;
+		return;
+	}
+	
+	/** Performs the actions needed when a coin ened its "life time". */
+	function void setCoin() {
+		let coinActive = false;
+		let scoreFlag = true;
+		return;
+	}
+	
+	/** Draws the ground on which Mario walks. */
+	method void drawGround() {
+		do Screen.setColor(true);
+		do Screen.drawRectangle(0, 248, 511, 255);
+		return;
+	}
+	
+	/** Disposes this MarioGame. */
+	method void dispose() {
+		var int i;
+		var Box temp;
+		let i = 0;
+		while (i < boxArrLength) {
+			let temp = boxArr[i];
+			do temp.dispose();
+			let i = i + 1;
+		}
+		do boxArr.dispose();
+		do mario.dispose();
+		do initMsg.dispose();
+		do lives.dispose();
+		do scoreMsg.dispose();
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	/** Determines which box, if any, is above Mario. */
+	method int whosAbove() {
+		var int i, midX, boxX, midXoffset, maxScore;
+		var int aboveme;
+		var Box cur;
+		var Array boxScore;
+		let boxScore = Array.new(boxArrLength);
+		let aboveme = -1;
+		let i = 0;
+		let midXoffset = 0;
+		let maxScore = 0;
+		let midX = mario.getX() + 30;
+		
+		while (i < boxArrLength) {  // initialize
+			let boxScore[i] = 0;
+			let i = i + 1;
+		}
+		
+		let  i = 0;
+		while (i < boxArrLength) {  // fill the score array
+			let cur = boxArr[i];
+			let boxX = cur.getX();
+			while (midXoffset < 5) {  // check the score for each box
+				if (((midX + midXoffset) > boxX) & ((midX + midXoffset) < (boxX + 64))) {
+					let boxScore[i] = boxScore[i] + 1;
+				}
+				let midXoffset = midXoffset + 1;
+			}
+			let midXoffset = 0;
+			let i = i + 1;
+		}
+		
+		let i = 0;
+		while (i < boxArrLength) {  // find the max score
+			if (boxScore[i] > maxScore) {
+				let maxScore = boxScore[i];
+				let aboveme = i;
+			}
+			let i = i + 1;
+		}
+		return aboveme;
+	}
+	
+	/** Moves Mario's figure. */
+	method void moveMario() {
+		if (direction = 2) {
+			do mario.jump();
+			let boxAbove = whosAbove();
+			let jump = true;
+		}
+		if (direction = 1) {
+			do mario.moveLeft();
+		}
+		if (direction = 0) {
+			do mario.moveRight();
+		}
+		return;
+	}
+	
+	/** Shows the true and honest High Scores screen. */
+	method void highScores() {
+		var int memAddress;
+		var String first, second, third, dots, last;
+		let first = "1ST                     Schocken                     030479";
+		let second = "2ND                     Aviv Yaish                   030478";
+		let third = "3RD                     Yves Godin                   022051";
+		let dots = ".                       .                            ......";
+		let last = "76,212TH                You                          000000";
+		
+		do Screen.clearScreen();
+		do Screen.setColor(true);
+		// H
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(190, 16);
+		do Memory.poke(memAddress + 0, 31775);
+		do Memory.poke(memAddress + 32, -15311);
+		do Memory.poke(memAddress + 64, -15311);
+		do Memory.poke(memAddress + 96, -15311);
+		do Memory.poke(memAddress + 128, -15311);
+		do Memory.poke(memAddress + 160, -15311);
+		do Memory.poke(memAddress + 192, -14351);
+		do Memory.poke(memAddress + 224, -16383);
+		do Memory.poke(memAddress + 256, -16383);
+		do Memory.poke(memAddress + 288, -14351);
+		do Memory.poke(memAddress + 320, -15311);
+		do Memory.poke(memAddress + 352, -15311);
+		do Memory.poke(memAddress + 384, -15311);
+		do Memory.poke(memAddress + 416, -15311);
+		do Memory.poke(memAddress + 448, -961);
+		do Memory.poke(memAddress + 480, -4034);
+		
+		// I
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(206, 16);
+		do Memory.poke(memAddress + 0, 32767);
+		do Memory.poke(memAddress + 32, -16383);
+		do Memory.poke(memAddress + 64, -993);
+		do Memory.poke(memAddress + 96, -994);
+		do Memory.poke(memAddress + 128, 3088);
+		do Memory.poke(memAddress + 160, 3088);
+		do Memory.poke(memAddress + 192, 3088);
+		do Memory.poke(memAddress + 224, 3088);
+		do Memory.poke(memAddress + 256, 3088);
+		do Memory.poke(memAddress + 288, 3088);
+		do Memory.poke(memAddress + 320, 3088);
+		do Memory.poke(memAddress + 352, 3088);
+		do Memory.poke(memAddress + 384, 31775);
+		do Memory.poke(memAddress + 416, -16383);
+		do Memory.poke(memAddress + 448, -1);
+		do Memory.poke(memAddress + 480, -2);
+		
+		// G
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(222, 16);
+		do Memory.poke(memAddress + 0, 32752);
+		do Memory.poke(memAddress + 32, -16368);
+		do Memory.poke(memAddress + 64, -36);
+		do Memory.poke(memAddress + 96, -60);
+		do Memory.poke(memAddress + 128, 247);
+		do Memory.poke(memAddress + 160, 241);
+		do Memory.poke(memAddress + 192, 32561);
+		do Memory.poke(memAddress + 224, -16079);
+		do Memory.poke(memAddress + 256, -14543);
+		do Memory.poke(memAddress + 288, -14799);
+		do Memory.poke(memAddress + 320, -15241);
+		do Memory.poke(memAddress + 352, -15162);
+		do Memory.poke(memAddress + 384, -14372);
+		do Memory.poke(memAddress + 416, -16360);
+		do Memory.poke(memAddress + 448, -16);
+		do Memory.poke(memAddress + 480, -32);
+		
+		// H
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(238, 16);
+		do Memory.poke(memAddress + 0, 31775);
+		do Memory.poke(memAddress + 32, -15311);
+		do Memory.poke(memAddress + 64, -15311);
+		do Memory.poke(memAddress + 96, -15311);
+		do Memory.poke(memAddress + 128, -15311);
+		do Memory.poke(memAddress + 160, -15311);
+		do Memory.poke(memAddress + 192, -14351);
+		do Memory.poke(memAddress + 224, -16383);
+		do Memory.poke(memAddress + 256, -16383);
+		do Memory.poke(memAddress + 288, -14351);
+		do Memory.poke(memAddress + 320, -15311);
+		do Memory.poke(memAddress + 352, -15311);
+		do Memory.poke(memAddress + 384, -15311);
+		do Memory.poke(memAddress + 416, -15311);
+		do Memory.poke(memAddress + 448, -961);
+		do Memory.poke(memAddress + 480, -4034);
+		
+		// S
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(260, 16);
+		do Memory.poke(memAddress + 0, 2044);
+		do Memory.poke(memAddress + 32, 3076);
+		do Memory.poke(memAddress + 64, 7671);
+		do Memory.poke(memAddress + 96, 12785);
+		do Memory.poke(memAddress + 128, 16177);
+		do Memory.poke(memAddress + 160, 15921);
+		do Memory.poke(memAddress + 192, 8183);
+		do Memory.poke(memAddress + 224, 12294);
+		do Memory.poke(memAddress + 256, 30716);
+		do Memory.poke(memAddress + 288, -14344);
+		do Memory.poke(memAddress + 320, -15329);
+		do Memory.poke(memAddress + 352, -15343);
+		do Memory.poke(memAddress + 384, -2057);
+		do Memory.poke(memAddress + 416, -4090);
+		do Memory.poke(memAddress + 448, 16380);
+		do Memory.poke(memAddress + 480, 16376);
+		
+		// C
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(276, 16);
+		do Memory.poke(memAddress + 0, 8176);
+		do Memory.poke(memAddress + 32, 12304);
+		do Memory.poke(memAddress + 64, 30684);
+		do Memory.poke(memAddress + 96, -14396);
+		do Memory.poke(memAddress + 128, -777);
+		do Memory.poke(memAddress + 160, -1807);
+		do Memory.poke(memAddress + 192, 49);
+		do Memory.poke(memAddress + 224, 49);
+		do Memory.poke(memAddress + 256, 49);
+		do Memory.poke(memAddress + 288, 49);
+		do Memory.poke(memAddress + 320, 31863);
+		do Memory.poke(memAddress + 352, -15162);
+		do Memory.poke(memAddress + 384, -2084);
+		do Memory.poke(memAddress + 416, -4072);
+		do Memory.poke(memAddress + 448, 16368);
+		do Memory.poke(memAddress + 480, 16352);
+		
+		// O
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(292, 16);
+		do Memory.poke(memAddress + 0, 8188);
+		do Memory.poke(memAddress + 32, 12292);
+		do Memory.poke(memAddress + 64, 30711);
+		do Memory.poke(memAddress + 96, -14351);
+		do Memory.poke(memAddress + 128, -15311);
+		do Memory.poke(memAddress + 160, -15311);
+		do Memory.poke(memAddress + 192, -15311);
+		do Memory.poke(memAddress + 224, -15311);
+		do Memory.poke(memAddress + 256, -15311);
+		do Memory.poke(memAddress + 288, -15311);
+		do Memory.poke(memAddress + 320, -15311);
+		do Memory.poke(memAddress + 352, -15311);
+		do Memory.poke(memAddress + 384, -2057);
+		do Memory.poke(memAddress + 416, -4090);
+		do Memory.poke(memAddress + 448, 16380);
+		do Memory.poke(memAddress + 480, 16376);
+		
+		// R
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(308, 16);
+		do Memory.poke(memAddress + 0, 8191);
+		do Memory.poke(memAddress + 32, 12289);
+		do Memory.poke(memAddress + 64, 30705);
+		do Memory.poke(memAddress + 96, -14351);
+		do Memory.poke(memAddress + 128, -15311);
+		do Memory.poke(memAddress + 160, -15311);
+		do Memory.poke(memAddress + 192, -14543);
+		do Memory.poke(memAddress + 224, -16079);
+		do Memory.poke(memAddress + 256, -527);
+		do Memory.poke(memAddress + 288, -1023);
+		do Memory.poke(memAddress + 320, 7281);
+		do Memory.poke(memAddress + 352, 12401);
+		do Memory.poke(memAddress + 384, 29169);
+		do Memory.poke(memAddress + 416, -15951);
+		do Memory.poke(memAddress + 448, -193);
+		do Memory.poke(memAddress + 480, -450);
+		
+		// E
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(324, 16);
+		do Memory.poke(memAddress + 0, 32767);
+		do Memory.poke(memAddress + 32, -16383);
+		do Memory.poke(memAddress + 64, -15);
+		do Memory.poke(memAddress + 96, -15);
+		do Memory.poke(memAddress + 128, 17);
+		do Memory.poke(memAddress + 160, 17);
+		do Memory.poke(memAddress + 192, 2033);
+		do Memory.poke(memAddress + 224, 3073);
+		do Memory.poke(memAddress + 256, 4081);
+		do Memory.poke(memAddress + 288, 4081);
+		do Memory.poke(memAddress + 320, 49);
+		do Memory.poke(memAddress + 352, 49);
+		do Memory.poke(memAddress + 384, 32753);
+		do Memory.poke(memAddress + 416, -16383);
+		do Memory.poke(memAddress + 448, -1);
+		do Memory.poke(memAddress + 480, -2);
+		
+		// S
+		let memAddress = 16384 + Math.multiply(32, 15) + Math.divide(340, 16);
+		do Memory.poke(memAddress + 0, 2044);
+		do Memory.poke(memAddress + 32, 3076);
+		do Memory.poke(memAddress + 64, 7671);
+		do Memory.poke(memAddress + 96, 12785);
+		do Memory.poke(memAddress + 128, 16177);
+		do Memory.poke(memAddress + 160, 15921);
+		do Memory.poke(memAddress + 192, 8183);
+		do Memory.poke(memAddress + 224, 12294);
+		do Memory.poke(memAddress + 256, 30716);
+		do Memory.poke(memAddress + 288, -14344);
+		do Memory.poke(memAddress + 320, -15329);
+		do Memory.poke(memAddress + 352, -15343);
+		do Memory.poke(memAddress + 384, -2057);
+		do Memory.poke(memAddress + 416, -4090);
+		do Memory.poke(memAddress + 448, 16380);
+		do Memory.poke(memAddress + 480, 16376);
+		
+		do Output.moveCursor(4, 2);
+		do Output.printString(first);
+		do Output.moveCursor(6, 2);
+		do Output.printString(second);
+		do Output.moveCursor(8, 2);
+		do Output.printString(third);
+		do Output.moveCursor(10, 2);
+		do Output.printString(dots);
+		do Output.moveCursor(12, 2);
+		do Output.printString(dots);
+		do Output.moveCursor(14, 2);
+		do Output.printString(dots);
+		do Output.moveCursor(16, 2);
+		do Output.printString(dots);
+		do Output.moveCursor(18, 2);
+		do Output.printString(dots);
+		do updateScore(0, last);
+		do Output.moveCursor(20, 2);
+		do Output.printString(last);
+		
+		return;
+	}
+	
+	/** Runs the game. */
+	method void run() {
+		var char key;
+		var boolean exit;
+		var Coin coin;
+		var Box cur;
+		let exit = false;
+		while (~exit) {
+			while (key = 0) {
+				if (~(direction = 2)) {
+					let direction = -1;
+					do moveMario();
+				}
+				if (jump) {
+					do mario.jump();
+					let cur = boxArr[boxAbove];
+					if ((mario.getY() = 130) | (mario.getY() < 130) & ~(cur.isPopped()) & ~(cur.getType() = 0)) {
+						let coinActive = true;
+						do cur.pop();
+						let coin = Coin.new(boxArr[boxAbove]);
+						do updateScore(coin.getValue(), scoreMsg);
+					}
+				}
+				if (coinActive) {
+					do coin.jump();
+				}
+				if (scoreFlag) { 
+					do setScore(); 
+				}
+				let key = Keyboard.keyPressed();
+				do Sys.wait(3);
+			}
+			
+			if (key = 81) { let exit = true; }
+			if (key = 132) { let direction = 0; }  // right
+			if (key = 130) { let direction = 1; }  // left
+			if (key = 32) { let direction = 2; }   // jump
+			if (~(key = 81) & ~(key = 132) & ~(key = 130) & ~(key = 32)) { let key = 0; }
+			
+			while (~(key = 0)) {
+				let key = Keyboard.keyPressed();
+				if (~(jump)) {
+					do moveMario();
+				}
+				if (jump) {
+					do mario.jump();
+					let cur = boxArr[boxAbove];
+					if ((mario.getY() = 130) | (mario.getY() < 130) & ~(cur.isPopped()) & ~(cur.getType() = 0)) {
+						let coinActive = true;
+						do cur.pop();
+						let coin = Coin.new(boxArr[boxAbove]);
+						do updateScore(coin.getValue(), scoreMsg);
+					}
+				}
+				if (coinActive) {
+					do coin.jump();
+				}
+				if (scoreFlag) { 
+					do setScore(); 
+				}
+				do Sys.wait(3);
+			}
+		}
+		
+		do highScores();
+		let exit = false;
+		while (~exit) {
+			let key = Keyboard.keyPressed();
+			if (key = 81) { let exit = true; }
+		}
+		return;
+	}
+}
